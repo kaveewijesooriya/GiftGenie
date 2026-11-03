@@ -11,21 +11,34 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      tintColor="#8055D8"
+      labelStyle={{
+        selected: { color: '#8055D8' },
+      }}
+    >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
+        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
+        <NativeTabs.Trigger.Label>Gift Ideas</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="gift.fill" md="card_giftcard" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="find">
+        <NativeTabs.Trigger.Label>Find Gifts</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="wishlist">
+        <NativeTabs.Trigger.Label>Wishlist</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="heart.fill" md="favorite" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="planner">
+        <NativeTabs.Trigger.Label>Planner</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
