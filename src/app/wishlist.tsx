@@ -1,5 +1,5 @@
 import { FeaturePlaceholder } from '@/components/feature-placeholder';
-import { HintRow } from '@/components/hint-row';
+
 
 export default function WishlistScreen() {
   return (
