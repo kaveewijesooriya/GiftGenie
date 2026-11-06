@@ -31,6 +31,11 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="cart">
+        <NativeTabs.Trigger.Label>Cart</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="cart.fill" md="shopping_cart" />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="wishlist">
         <NativeTabs.Trigger.Label>Wishlist</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="heart.fill" md="favorite" />

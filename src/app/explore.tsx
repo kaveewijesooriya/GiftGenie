@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import {
   FlatList,
@@ -8,14 +7,18 @@ import {
   View,
   useColorScheme,
   Pressable,
+  Alert,
 } from 'react-native';
 
 import { gifts } from '@/data/gifts';
 import { Colors } from '@/constants/theme';
+import { useShop } from '@/context/shop-context';
 
 export default function GiftIdeasScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+
+  const { addToCart, toggleWishlist, wishlistItems } = useShop();
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -115,30 +118,57 @@ export default function GiftIdeasScreen() {
             No gifts found. Try another search or category.
           </Text>
         }
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: colors.backgroundElement },
-            ]}
-          >
-            <Text style={styles.emoji}>{item.emoji}</Text>
+        renderItem={({ item }) => {
+          const isWishlisted = wishlistItems.some(
+            (gift) => gift.id === item.id
+          );
 
-            <View style={styles.details}>
-              <Text style={[styles.name, { color: colors.text }]}>
-                {item.name}
-              </Text>
+          return (
+            <View
+              style={[
+                styles.card,
+                { backgroundColor: colors.backgroundElement },
+              ]}
+            >
+              <Text style={styles.emoji}>{item.emoji}</Text>
 
-              <Text style={[styles.category, { color: colors.textSecondary }]}>
-                {item.category}
-              </Text>
+              <View style={styles.details}>
+                <Text style={[styles.name, { color: colors.text }]}>
+                  {item.name}
+                </Text>
 
-              <Text style={styles.price}>
-                LKR {item.price.toLocaleString()}
-              </Text>
+                <Text style={[styles.category, { color: colors.textSecondary }]}>
+                  {item.category}
+                </Text>
+
+                <Text style={styles.price}>
+                  LKR {item.price.toLocaleString()}
+                </Text>
+
+                <View style={styles.actions}>
+                  <Pressable
+                    style={styles.cartButton}
+                    onPress={() => {
+                      addToCart(item.id);
+                      Alert.alert('Added to Cart', `${item.name} added successfully!`);
+                    }}
+                  >
+                    <Text style={styles.cartButtonText}>+ Add to Cart</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={styles.wishlistButton}
+                    onPress={() => toggleWishlist(item.id)}
+                  >
+                    <Text style={styles.wishlistButtonText}>
+                      {isWishlisted ? '♥ Saved' : '♡ Wishlist'}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -216,6 +246,35 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#8055D8',
     marginTop: 6,
+  },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
+  },
+  cartButton: {
+    backgroundColor: '#8055D8',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 9,
+  },
+  cartButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  wishlistButton: {
+    borderWidth: 1,
+    borderColor: '#8055D8',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 9,
+  },
+  wishlistButtonText: {
+    color: '#8055D8',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   emptyText: {
     textAlign: 'center',
