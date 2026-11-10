@@ -11,6 +11,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { gifts } from '@/data/gifts';
 import { Colors } from '@/constants/theme';
@@ -19,11 +20,17 @@ import { useShop } from '@/context/shop-context';
 export default function GiftIdeasScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const isDark = scheme === 'dark';
 
   const { addToCart, toggleWishlist, wishlistItems } = useShop();
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const primary = '#8055D8';
+  const surface = isDark ? '#252238' : '#FFFFFF';
+  const border = isDark ? '#393044' : '#EEE8F6';
+  const muted = colors.textSecondary;
 
   const categories = useMemo(
     () => [
@@ -54,32 +61,70 @@ export default function GiftIdeasScreen() {
 
   const renderHeader = () => (
     <View>
-      <Text style={[styles.title, { color: colors.text }]}>
-        Gift Ideas 🎁
-      </Text>
+      {/* Hero Banner */}
+      <View style={styles.hero}>
+        <View style={styles.heroCircleOne} />
+        <View style={styles.heroCircleTwo} />
 
-      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-        Discover something special for everyone
-      </Text>
+        <View style={styles.heroContent}>
+          <View style={styles.heroBadge}>
+            <Ionicons name="sparkles" size={13} color="#FFFFFF" />
+            <Text style={styles.heroBadgeText}>SPECIAL GIFT COLLECTION</Text>
+          </View>
 
-      <TextInput
+          <Text style={styles.heroTitle}>
+            Find a Gift,{'\n'}Share Happiness!
+          </Text>
+
+          <Text style={styles.heroSubtitle}>
+            Discover thoughtful gifts for your favourite people.
+          </Text>
+        </View>
+
+        <Text style={styles.heroEmoji}>🎁</Text>
+        <Text style={styles.heroHeart}>💜</Text>
+      </View>
+
+      {/* Search */}
+      <View
         style={[
-          styles.searchInput,
+          styles.searchBox,
           {
-            backgroundColor: colors.backgroundElement,
-            color: colors.text,
-            borderColor: colors.textSecondary,
+            backgroundColor: surface,
+            borderColor: border,
           },
         ]}
-        placeholder="Search gifts, categories..."
-        placeholderTextColor={colors.textSecondary}
-        value={search}
-        onChangeText={setSearch}
-      />
+      >
+        <Ionicons name="search-outline" size={21} color={muted} />
 
-      <Text style={[styles.filterTitle, { color: colors.text }]}>
-        Browse Categories
-      </Text>
+        <TextInput
+          style={[styles.searchInput, { color: colors.text }]}
+          placeholder="Search gifts, categories..."
+          placeholderTextColor={muted}
+          value={search}
+          onChangeText={setSearch}
+          returnKeyType="search"
+        />
+
+        {search.length > 0 && (
+          <Pressable onPress={() => setSearch('')}>
+            <Ionicons name="close-circle" size={20} color={muted} />
+          </Pressable>
+        )}
+      </View>
+
+      {/* Categories */}
+      <View style={styles.sectionHeader}>
+        <View>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Browse Categories
+          </Text>
+          <Text style={[styles.sectionSubtitle, { color: muted }]}>
+            Explore gifts by category
+          </Text>
+        </View>
+        <Text style={styles.sectionEmoji}>🛍️</Text>
+      </View>
 
       <ScrollView
         horizontal
@@ -87,7 +132,7 @@ export default function GiftIdeasScreen() {
         contentContainerStyle={styles.categoryContainer}
       >
         {categories.map((category) => {
-          const isSelected = selectedCategory === category;
+          const selected = selectedCategory === category;
 
           return (
             <Pressable
@@ -96,19 +141,23 @@ export default function GiftIdeasScreen() {
               style={[
                 styles.categoryButton,
                 {
-                  backgroundColor: isSelected
-                    ? '#8055D8'
-                    : colors.backgroundElement,
-                  borderColor: isSelected
-                    ? '#8055D8'
-                    : colors.textSecondary,
+                  backgroundColor: selected ? primary : surface,
+                  borderColor: selected ? primary : border,
                 },
               ]}
             >
+              {category === 'All' && (
+                <Ionicons
+                  name="apps-outline"
+                  size={15}
+                  color={selected ? '#FFFFFF' : primary}
+                />
+              )}
+
               <Text
                 style={[
                   styles.categoryButtonText,
-                  { color: isSelected ? '#FFFFFF' : colors.text },
+                  { color: selected ? '#FFFFFF' : colors.text },
                 ]}
               >
                 {category}
@@ -118,22 +167,36 @@ export default function GiftIdeasScreen() {
         })}
       </ScrollView>
 
+      {/* Results */}
       <View style={styles.resultHeader}>
-        <Text style={[styles.resultTitle, { color: colors.text }]}>
-          {selectedCategory === 'All'
-            ? 'Popular Gifts'
-            : selectedCategory}
-        </Text>
+        <View>
+          <Text style={[styles.resultTitle, { color: colors.text }]}>
+            {selectedCategory === 'All'
+              ? 'Popular Gift Ideas'
+              : selectedCategory}
+          </Text>
 
-        <Text style={[styles.resultCount, { color: colors.textSecondary }]}>
-          {filteredGifts.length} gifts found
-        </Text>
+          <Text style={[styles.resultSubtitle, { color: muted }]}>
+            Find something special today
+          </Text>
+        </View>
+
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>
+            {filteredGifts.length} Gifts
+          </Text>
+        </View>
       </View>
     </View>
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background },
+      ]}
+    >
       <FlatList
         data={filteredGifts}
         keyExtractor={(item) => item.id}
@@ -142,13 +205,20 @@ export default function GiftIdeasScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
+          <View
+            style={[
+              styles.emptyContainer,
+              { backgroundColor: surface },
+            ]}
+          >
             <Text style={styles.emptyEmoji}>🎁</Text>
+
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
               No gifts found
             </Text>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              Try another category or search.
+
+            <Text style={[styles.emptyText, { color: muted }]}>
+              Try another category or search for something else.
             </Text>
 
             <Pressable
@@ -171,63 +241,91 @@ export default function GiftIdeasScreen() {
             <View
               style={[
                 styles.card,
-                { backgroundColor: colors.backgroundElement },
+                {
+                  backgroundColor: surface,
+                  borderColor: border,
+                },
               ]}
             >
-              <View style={styles.emojiContainer}>
-                <Text style={styles.emoji}>{item.emoji}</Text>
+              {/* Gift Visual */}
+              <View style={styles.giftVisual}>
+                <View style={styles.giftVisualCircle}>
+                  <Text style={styles.giftEmoji}>{item.emoji}</Text>
+                </View>
+
+                <View style={styles.visualLabel}>
+                  <Text style={styles.visualLabelText}>
+                    {item.category.toUpperCase()}
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={() => toggleWishlist(item.id)}
+                  style={styles.heartButton}
+                >
+                  <Ionicons
+                    name={isWishlisted ? 'heart' : 'heart-outline'}
+                    size={21}
+                    color={isWishlisted ? '#E84C83' : '#8055D8'}
+                  />
+                </Pressable>
               </View>
 
+              {/* Gift Details */}
               <View style={styles.details}>
-                <Text
-                  style={[styles.name, { color: colors.text }]}
-                  numberOfLines={2}
-                >
-                  {item.name}
-                </Text>
+                <View style={styles.nameRow}>
+                  <Text
+                    style={[styles.name, { color: colors.text }]}
+                    numberOfLines={2}
+                  >
+                    {item.name}
+                  </Text>
+                </View>
 
                 <Text
-                  style={[styles.category, { color: colors.textSecondary }]}
-                >
-                  {item.category}
-                </Text>
-
-                <Text
-                  style={[styles.description, { color: colors.textSecondary }]}
+                  style={[styles.description, { color: muted }]}
                   numberOfLines={2}
                 >
                   {item.description}
                 </Text>
 
-                <Text style={styles.price}>
-                  LKR {item.price.toLocaleString()}
-                </Text>
-
-                <View style={styles.actions}>
-                  <Pressable
-                    style={styles.cartButton}
-                    onPress={() => {
-                      addToCart(item.id);
-                      Alert.alert(
-                        'Added to Cart 🎉',
-                        `${item.name} added successfully!`
-                      );
-                    }}
-                  >
-                    <Text style={styles.cartButtonText}>
-                      + Add to Cart
+                <View style={styles.priceRow}>
+                  <View>
+                    <Text style={[styles.priceLabel, { color: muted }]}>
+                      PRICE
                     </Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={styles.wishlistButton}
-                    onPress={() => toggleWishlist(item.id)}
-                  >
-                    <Text style={styles.wishlistButtonText}>
-                      {isWishlisted ? '♥ Saved' : '♡ Wishlist'}
+                    <Text style={styles.price}>
+                      LKR {item.price.toLocaleString('en-LK')}
                     </Text>
-                  </Pressable>
+                  </View>
+
+                  <View style={styles.actions}>
+                    <Pressable
+                      style={styles.cartButton}
+                      onPress={() => {
+                        addToCart(item.id);
+                        Alert.alert(
+                          'Added to Cart 🎉',
+                          `${item.name} added successfully!`
+                        );
+                      }}
+                    >
+                      <Ionicons
+                        name="bag-add-outline"
+                        size={16}
+                        color="#FFFFFF"
+                      />
+                      <Text style={styles.cartButtonText}>Add</Text>
+                    </Pressable>
+                  </View>
                 </View>
+
+                {isWishlisted && (
+                  <Text style={styles.savedText}>
+                    <Ionicons name="heart" size={12} color="#E84C83" />
+                    {' '}Saved to Wishlist
+                  </Text>
+                )}
               </View>
             </View>
           );
@@ -240,160 +338,298 @@ export default function GiftIdeasScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 12,
   },
   list: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: 18,
+    paddingTop: 15,
     paddingBottom: 35,
-    flexGrow: 1,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  hero: {
+    minHeight: 190,
+    backgroundColor: '#8055D8',
+    borderRadius: 23,
+    padding: 20,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    position: 'relative',
+    marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 15,
-    marginTop: 6,
-    marginBottom: 18,
+  heroContent: {
+    zIndex: 2,
+    maxWidth: '75%',
+  },
+  heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 13,
+  },
+  heroBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.7,
+  },
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 26,
+    fontWeight: '900',
+    lineHeight: 32,
+  },
+  heroSubtitle: {
+    color: '#F0E9FF',
+    fontSize: 11,
+    lineHeight: 17,
+    marginTop: 9,
+  },
+  heroEmoji: {
+    position: 'absolute',
+    right: 7,
+    bottom: 24,
+    fontSize: 76,
+    transform: [{ rotate: '-12deg' }],
+  },
+  heroHeart: {
+    position: 'absolute',
+    right: 23,
+    top: 22,
+    fontSize: 25,
+  },
+  heroCircleOne: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    right: -50,
+    top: -65,
+  },
+  heroCircleTwo: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    right: 65,
+    bottom: -65,
+  },
+  searchBox: {
+    height: 53,
+    borderRadius: 15,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    gap: 10,
   },
   searchInput: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    fontSize: 15,
+    flex: 1,
+    fontSize: 13,
   },
-  filterTitle: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 12,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 26,
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  sectionSubtitle: {
+    fontSize: 11,
+    marginTop: 4,
+  },
+  sectionEmoji: {
+    fontSize: 26,
   },
   categoryContainer: {
-    paddingRight: 12,
-    paddingBottom: 5,
     gap: 9,
+    paddingBottom: 4,
   },
   categoryButton: {
-    paddingHorizontal: 17,
-    paddingVertical: 11,
+    minHeight: 39,
+    paddingHorizontal: 15,
     borderRadius: 22,
     borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   categoryButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
   },
   resultHeader: {
-    marginTop: 20,
-    marginBottom: 13,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 15,
   },
   resultTitle: {
     fontSize: 19,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
-  resultCount: {
-    fontSize: 13,
+  resultSubtitle: {
+    fontSize: 11,
     marginTop: 4,
   },
+  countBadge: {
+    backgroundColor: '#F0E8FF',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  countText: {
+    color: '#8055D8',
+    fontSize: 10,
+    fontWeight: '800',
+  },
   card: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 13,
-    borderRadius: 16,
-    marginBottom: 13,
-    gap: 12,
+    borderRadius: 19,
+    borderWidth: 1,
+    overflow: 'hidden',
+    marginBottom: 16,
   },
-  emojiContainer: {
-    width: 58,
-    height: 58,
-    borderRadius: 14,
-    backgroundColor: '#8055D820',
-    alignItems: 'center',
+  giftVisual: {
+    height: 145,
+    backgroundColor: '#F0E8FF',
     justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
   },
-  emoji: {
-    fontSize: 34,
+  giftVisualCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  giftEmoji: {
+    fontSize: 58,
+  },
+  visualLabel: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+  visualLabelText: {
+    color: '#8055D8',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  heartButton: {
+    position: 'absolute',
+    right: 12,
+    top: 11,
+    width: 35,
+    height: 35,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   details: {
-    flex: 1,
-    minWidth: 0,
+    padding: 15,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   name: {
     fontSize: 16,
-    fontWeight: '700',
-  },
-  category: {
-    fontSize: 12,
-    marginTop: 4,
+    fontWeight: '800',
   },
   description: {
-    fontSize: 12,
-    marginTop: 5,
+    fontSize: 11,
     lineHeight: 17,
+    marginTop: 6,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 13,
+  },
+  priceLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   price: {
-    fontSize: 16,
-    fontWeight: 'bold',
     color: '#8055D8',
-    marginTop: 8,
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 3,
   },
   actions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
-    marginTop: 11,
   },
   cartButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#8055D8',
-    paddingHorizontal: 11,
-    paddingVertical: 10,
-    borderRadius: 9,
+    paddingHorizontal: 15,
+    paddingVertical: 11,
+    borderRadius: 11,
   },
   cartButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontWeight: '800',
   },
-  wishlistButton: {
-    borderWidth: 1,
-    borderColor: '#8055D8',
-    paddingHorizontal: 11,
-    paddingVertical: 10,
-    borderRadius: 9,
-  },
-  wishlistButtonText: {
-    color: '#8055D8',
-    fontSize: 12,
-    fontWeight: 'bold',
+  savedText: {
+    color: '#E84C83',
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 10,
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: 45,
+    paddingVertical: 35,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginTop: 15,
   },
   emptyEmoji: {
-    fontSize: 48,
+    fontSize: 50,
     marginBottom: 12,
   },
   emptyTitle: {
     fontSize: 19,
-    fontWeight: 'bold',
+    fontWeight: '900',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 7,
     textAlign: 'center',
+    lineHeight: 18,
   },
   resetButton: {
     backgroundColor: '#8055D8',
     paddingHorizontal: 20,
     paddingVertical: 11,
-    borderRadius: 10,
+    borderRadius: 11,
     marginTop: 17,
   },
   resetButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '800',
+    fontSize: 12,
   },
 });
