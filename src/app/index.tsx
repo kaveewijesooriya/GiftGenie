@@ -1,77 +1,69 @@
-import { useState } from 'react';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  Pressable,
   ScrollView,
   StyleSheet,
-  Pressable,
+  Text,
+  TextInput,
   useColorScheme,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const occasions = [
-  { id: 'all', name: 'All', emoji: '✨' },
-  { id: 'birthday', name: 'Birthday', emoji: '🎂' },
-  { id: 'anniversary', name: 'Anniversary', emoji: '💝' },
-  { id: 'wedding', name: 'Wedding', emoji: '💍' },
-  { id: 'graduation', name: 'Graduation', emoji: '🎓' },
-];
+import { Colors } from '@/constants/theme';
+import { gifts } from '@/data/gifts';
 
-const gifts = [
-  {
-    id: '1',
-    name: 'Elegant Gift Box',
-    category: 'Birthday',
-    price: 2500,
-    emoji: '🎁',
-    color: '#F1E5FF',
-  },
-  {
-    id: '2',
-    name: 'Rose Bouquet',
-    category: 'Anniversary',
-    price: 3500,
-    emoji: '💐',
-    color: '#FFE5EB',
-  },
-  {
-    id: '3',
-    name: 'Luxury Watch',
-    category: 'Birthday',
-    price: 8500,
-    emoji: '⌚',
-    color: '#E3EDFF',
-  },
+const occasions = [
+  { id: 'all', name: 'All Gifts', emoji: '✨' },
+  { id: 'Birthday', name: 'Birthday', emoji: '🎂' },
+  { id: 'Anniversary', name: 'Anniversary', emoji: '💝' },
+  { id: 'Wedding', name: 'Wedding', emoji: '💍' },
+  { id: 'Graduation', name: 'Graduation', emoji: '🎓' },
+  { id: 'Christmas', name: 'Christmas', emoji: '🎄' },
 ];
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const router = useRouter();
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
+  const theme = Colors[isDark ? 'dark' : 'light'];
 
   const [search, setSearch] = useState('');
   const [selectedOccasion, setSelectedOccasion] = useState('all');
 
   const colors = {
-    background: isDark ? '#15121D' : '#FAF8FF',
-    surface: isDark ? '#241F30' : '#FFFFFF',
-    text: isDark ? '#F7F2FF' : '#211A32',
+    background: theme.background,
+    surface: isDark ? '#252238' : '#FFFFFF',
+    text: theme.text,
     secondary: isDark ? '#B9ADC9' : '#827991',
     primary: '#8055D8',
     border: isDark ? '#393044' : '#EEE8F6',
+    softPurple: isDark ? '#302443' : '#F0E8FF',
   };
 
-  const filteredGifts = gifts.filter((gift) => {
-    const matchesSearch = gift.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  const filteredGifts = useMemo(() => {
+    return gifts.filter((gift) => {
+      const searchText = search.trim().toLowerCase();
 
-    const matchesOccasion =
-      selectedOccasion === 'all' ||
-      gift.category.toLowerCase() === selectedOccasion;
+      const matchesSearch =
+        gift.name.toLowerCase().includes(searchText) ||
+        gift.category.toLowerCase().includes(searchText) ||
+        gift.description.toLowerCase().includes(searchText);
 
-    return matchesSearch && matchesOccasion;
-  });
+      const matchesOccasion =
+        selectedOccasion === 'all' ||
+        gift.occasions.some(
+          (item) => item.toLowerCase() === selectedOccasion.toLowerCase()
+        );
+
+      return matchesSearch && matchesOccasion;
+    });
+  }, [search, selectedOccasion]);
+
+  const popularGifts = filteredGifts.slice(0, 6);
 
   return (
     <SafeAreaView
@@ -81,12 +73,13 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.brandContainer}>
             <View style={styles.logo}>
-              <Text style={styles.logoText}>G</Text>
+              <Ionicons name="gift" size={25} color="#FFFFFF" />
             </View>
 
             <View>
@@ -99,31 +92,63 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <View style={[styles.profileButton, { backgroundColor: colors.surface }]}>
-            <Text style={styles.profileEmoji}>👤</Text>
+          <Pressable
+            onPress={() => router.push('/cart')}
+            style={[
+              styles.headerButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <Ionicons name="bag-outline" size={22} color={colors.primary} />
+          </Pressable>
+        </View>
+
+        {/* Welcome Banner */}
+        <View style={styles.hero}>
+          <View style={styles.heroCircleOne} />
+          <View style={styles.heroCircleTwo} />
+
+          <View style={styles.heroContent}>
+            <View style={styles.heroBadge}>
+              <Ionicons name="sparkles" size={13} color="#FFFFFF" />
+              <Text style={styles.heroBadgeText}>YOUR GIFTING PARTNER</Text>
+            </View>
+
+            <Text style={styles.heroTitle}>
+              Find the perfect{'\n'}gift for everyone!
+            </Text>
+
+            <Text style={styles.heroDescription}>
+              Beautiful gifts. Special moments.{'\n'}
+              Unforgettable memories.
+            </Text>
+
+            <Pressable
+              onPress={() => router.push('/find')}
+              style={({ pressed }) => [
+                styles.heroButton,
+                { opacity: pressed ? 0.8 : 1 },
+              ]}
+            >
+              <Text style={styles.heroButtonText}>Find a Gift</Text>
+              <Ionicons name="arrow-forward" size={17} color="#8055D8" />
+            </Pressable>
+          </View>
+
+          <View style={styles.heroDecoration}>
+            <Text style={styles.heroGift}>🎁</Text>
+            <Text style={styles.heroHeart}>💜</Text>
           </View>
         </View>
 
-        {/* Welcome section */}
-        <View style={styles.welcomeSection}>
-          <Text style={[styles.greeting, { color: colors.secondary }]}>
-            HELLO, GIFT GIVER 👋
-          </Text>
-
-          <Text style={[styles.heading, { color: colors.text }]}>
-            Find the perfect{'\n'}
-            <Text style={{ color: colors.primary }}>gift for everyone.</Text>
-          </Text>
-
-          <Text style={[styles.description, { color: colors.secondary }]}>
-            Thoughtful gifts make unforgettable memories.
-            Let’s find something special!
-          </Text>
-        </View>
-
-        {/* Search bar */}
-        <View style={[styles.searchBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={styles.searchIcon}>🔍</Text>
+        {/* Search */}
+        <View
+          style={[
+            styles.searchBox,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Ionicons name="search-outline" size={21} color={colors.secondary} />
 
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
@@ -136,20 +161,26 @@ export default function HomeScreen() {
 
           {search.length > 0 && (
             <Pressable onPress={() => setSearch('')}>
-              <Text style={{ color: colors.secondary, fontSize: 18 }}>✕</Text>
+              <Ionicons
+                name="close-circle"
+                size={20}
+                color={colors.secondary}
+              />
             </Pressable>
           )}
         </View>
 
-        {/* Occasion categories */}
+        {/* Occasion Categories */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Shop by occasion
-            </Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
-              Find gifts for every moment
-            </Text>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Shop by Occasion
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
+                Gifts for every special moment
+              </Text>
+            </View>
           </View>
 
           <ScrollView
@@ -167,12 +198,17 @@ export default function HomeScreen() {
                   style={[
                     styles.categoryItem,
                     {
-                      backgroundColor: selected ? colors.primary : colors.surface,
-                      borderColor: selected ? colors.primary : colors.border,
+                      backgroundColor: selected
+                        ? colors.primary
+                        : colors.surface,
+                      borderColor: selected
+                        ? colors.primary
+                        : colors.border,
                     },
                   ]}
                 >
                   <Text style={styles.categoryEmoji}>{occasion.emoji}</Text>
+
                   <Text
                     style={[
                       styles.categoryName,
@@ -187,32 +223,103 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Featured gifts */}
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Explore GiftGenie
+          </Text>
+
+          <View style={styles.actionRow}>
+            <Pressable
+              onPress={() => router.push('/explore')}
+              style={[
+                styles.actionCard,
+                { backgroundColor: colors.softPurple },
+              ]}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="gift-outline" size={23} color="#8055D8" />
+              </View>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>
+                Gift Ideas
+              </Text>
+              <Text style={[styles.actionSubtitle, { color: colors.secondary }]}>
+                Explore gifts
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push('/planner')}
+              style={[
+                styles.actionCard,
+                { backgroundColor: isDark ? '#30243B' : '#FCEBF2' },
+              ]}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: isDark ? '#493047' : '#F9DCE8' }]}>
+                <Ionicons name="calendar-outline" size={23} color="#D65B91" />
+              </View>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>
+                Gift Planner
+              </Text>
+              <Text style={[styles.actionSubtitle, { color: colors.secondary }]}>
+                Plan special days
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Popular Gifts */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Popular gift ideas
-            </Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
-              A little inspiration goes a long way
-            </Text>
+            <View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Popular Gift Ideas
+              </Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
+                A little inspiration goes a long way
+              </Text>
+            </View>
+
+            <Pressable onPress={() => router.push('/explore')}>
+              <Text style={styles.seeAll}>See All →</Text>
+            </Pressable>
           </View>
 
-          {filteredGifts.length === 0 ? (
-            <View style={[styles.emptyBox, { backgroundColor: colors.surface }]}>
-              <Text style={{ fontSize: 32 }}>🎁</Text>
-              <Text style={[styles.emptyText, { color: colors.text }]}>
+          <Text style={[styles.resultCount, { color: colors.secondary }]}>
+            {filteredGifts.length} gifts found
+          </Text>
+
+          {popularGifts.length === 0 ? (
+            <View
+              style={[
+                styles.emptyBox,
+                { backgroundColor: colors.surface },
+              ]}
+            >
+              <Text style={styles.emptyEmoji}>🎁</Text>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 No gifts found
               </Text>
-              <Text style={{ color: colors.secondary }}>
+              <Text style={[styles.emptyDescription, { color: colors.secondary }]}>
                 Try another search or occasion.
               </Text>
+
+              <Pressable
+                onPress={() => {
+                  setSearch('');
+                  setSelectedOccasion('all');
+                }}
+                style={styles.resetButton}
+              >
+                <Text style={styles.resetButtonText}>Clear Filters</Text>
+              </Pressable>
             </View>
           ) : (
             <View style={styles.giftGrid}>
-              {filteredGifts.map((gift) => (
+              {popularGifts.map((gift) => (
                 <Pressable
                   key={gift.id}
+                  onPress={() => router.push('/explore')}
                   style={({ pressed }) => [
                     styles.giftCard,
                     {
@@ -225,14 +332,20 @@ export default function HomeScreen() {
                   <View
                     style={[
                       styles.giftImage,
-                      { backgroundColor: gift.color },
+                      { backgroundColor: colors.softPurple },
                     ]}
                   >
                     <Text style={styles.giftEmoji}>{gift.emoji}</Text>
+
+                    <View style={styles.giftTag}>
+                      <Text style={styles.giftTagText}>POPULAR</Text>
+                    </View>
                   </View>
 
                   <View style={styles.giftInfo}>
-                    <Text style={[styles.giftCategory, { color: colors.secondary }]}>
+                    <Text
+                      style={[styles.giftCategory, { color: colors.secondary }]}
+                    >
                       {gift.category}
                     </Text>
 
@@ -243,7 +356,7 @@ export default function HomeScreen() {
                       {gift.name}
                     </Text>
 
-                    <Text style={[styles.giftPrice, { color: colors.primary }]}>
+                    <Text style={styles.giftPrice}>
                       LKR {gift.price.toLocaleString('en-LK')}
                     </Text>
                   </View>
@@ -253,13 +366,27 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Bottom message */}
-        <View style={styles.bottomMessage}>
+        {/* Bottom Message */}
+        <View
+          style={[
+            styles.bottomMessage,
+            { backgroundColor: colors.softPurple },
+          ]}
+        >
           <Text style={styles.bottomEmoji}>💜</Text>
-          <Text style={[styles.bottomText, { color: colors.secondary }]}>
-            Every gift tells a story. Make yours memorable.
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.bottomTitle, { color: colors.text }]}>
+              Make Someone Smile!
+            </Text>
+            <Text style={[styles.bottomText, { color: colors.secondary }]}>
+              Every gift tells a story. Make yours memorable.
+            </Text>
+          </View>
         </View>
+
+        <Text style={[styles.footer, { color: colors.secondary }]}>
+          Made with love by GiftGenie ✨
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -270,7 +397,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 22,
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 35,
   },
@@ -278,6 +405,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 23,
   },
   brandContainer: {
     flexDirection: 'row',
@@ -285,17 +413,12 @@ const styles = StyleSheet.create({
     gap: 11,
   },
   logo: {
-    width: 45,
-    height: 45,
+    width: 46,
+    height: 46,
     borderRadius: 15,
     backgroundColor: '#8055D8',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  logoText: {
-    color: '#FFFFFF',
-    fontSize: 27,
-    fontWeight: '800',
   },
   brandName: {
     fontSize: 21,
@@ -306,58 +429,127 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
-  profileButton: {
-    width: 43,
-    height: 43,
+  headerButton: {
+    width: 44,
+    height: 44,
     borderRadius: 15,
-    justifyContent: 'center',
+    borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  profileEmoji: {
-    fontSize: 21,
+  hero: {
+    minHeight: 240,
+    borderRadius: 24,
+    backgroundColor: '#8055D8',
+    padding: 21,
+    overflow: 'hidden',
+    position: 'relative',
+    justifyContent: 'center',
   },
-  welcomeSection: {
-    marginTop: 35,
-    marginBottom: 23,
+  heroContent: {
+    zIndex: 2,
+    alignItems: 'flex-start',
   },
-  greeting: {
-    fontSize: 11,
+  heroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 14,
+  },
+  heroBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 1.5,
-    marginBottom: 12,
+    letterSpacing: 1,
   },
-  heading: {
-    fontSize: 34,
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: 27,
+    fontWeight: '900',
+    lineHeight: 33,
+    letterSpacing: -0.7,
+  },
+  heroDescription: {
+    color: '#F0E9FF',
+    fontSize: 12,
+    lineHeight: 19,
+    marginTop: 9,
+  },
+  heroButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    marginTop: 17,
+  },
+  heroButtonText: {
+    color: '#8055D8',
+    fontSize: 12,
     fontWeight: '800',
-    lineHeight: 42,
-    letterSpacing: -1,
   },
-  description: {
-    fontSize: 13,
-    lineHeight: 21,
-    marginTop: 12,
+  heroDecoration: {
+    position: 'absolute',
+    right: 10,
+    bottom: 26,
+    zIndex: 1,
+    transform: [{ rotate: '-10deg' }],
+  },
+  heroGift: {
+    fontSize: 78,
+  },
+  heroHeart: {
+    fontSize: 28,
+    position: 'absolute',
+    top: -12,
+    right: -2,
+  },
+  heroCircleOne: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    right: -65,
+    top: -70,
+  },
+  heroCircleTwo: {
+    position: 'absolute',
+    width: 125,
+    height: 125,
+    borderRadius: 63,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    right: 45,
+    bottom: -75,
   },
   searchBox: {
     height: 54,
-    borderRadius: 17,
+    borderRadius: 16,
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 15,
     gap: 11,
-  },
-  searchIcon: {
-    fontSize: 17,
+    marginTop: 21,
   },
   searchInput: {
     flex: 1,
     fontSize: 13,
   },
   section: {
-    marginTop: 30,
+    marginTop: 28,
   },
   sectionHeader: {
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
   },
   sectionTitle: {
     fontSize: 19,
@@ -373,41 +565,94 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
   },
   categoryItem: {
+    minWidth: 85,
     borderWidth: 1,
     borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
     alignItems: 'center',
-    minWidth: 82,
   },
   categoryEmoji: {
     fontSize: 23,
     marginBottom: 7,
   },
   categoryName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 15,
+  },
+  actionCard: {
+    flex: 1,
+    borderRadius: 17,
+    padding: 14,
+    minHeight: 120,
+  },
+  actionIcon: {
+    width: 39,
+    height: 39,
+    borderRadius: 12,
+    backgroundColor: '#E5D9FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  actionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  actionSubtitle: {
+    fontSize: 10,
+    marginTop: 4,
+  },
+  seeAll: {
+    color: '#8055D8',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  resultCount: {
+    fontSize: 11,
+    marginTop: -7,
+    marginBottom: 12,
   },
   giftGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 13,
+    gap: 12,
   },
   giftCard: {
     width: '48%',
     flexGrow: 1,
     flexBasis: '45%',
-    borderRadius: 19,
+    borderRadius: 17,
     borderWidth: 1,
     overflow: 'hidden',
   },
   giftImage: {
-    height: 125,
-    justifyContent: 'center',
+    height: 120,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
   giftEmoji: {
-    fontSize: 57,
+    fontSize: 53,
+  },
+  giftTag: {
+    position: 'absolute',
+    top: 9,
+    left: 9,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 7,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+  },
+  giftTagText: {
+    color: '#8055D8',
+    fontSize: 8,
+    fontWeight: '900',
   },
   giftInfo: {
     padding: 12,
@@ -422,8 +667,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   giftPrice: {
+    color: '#8055D8',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '900',
     marginTop: 8,
   },
   emptyBox: {
@@ -432,20 +678,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  emptyText: {
+  emptyEmoji: {
+    fontSize: 36,
+  },
+  emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+  },
+  emptyDescription: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#8055D8',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    marginTop: 7,
+  },
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
   },
   bottomMessage: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 35,
-    gap: 8,
+    gap: 13,
+    padding: 16,
+    borderRadius: 17,
+    marginTop: 29,
   },
   bottomEmoji: {
-    fontSize: 23,
+    fontSize: 28,
+  },
+  bottomTitle: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   bottomText: {
-    fontSize: 11,
+    fontSize: 10,
+    lineHeight: 16,
+    marginTop: 4,
+  },
+  footer: {
     textAlign: 'center',
+    fontSize: 10,
+    marginTop: 23,
   },
 });
