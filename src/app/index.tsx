@@ -45,9 +45,9 @@ export default function HomeScreen() {
   };
 
   const filteredGifts = useMemo(() => {
-    return gifts.filter((gift) => {
-      const searchText = search.trim().toLowerCase();
+    const searchText = search.trim().toLowerCase();
 
+    return gifts.filter((gift) => {
       const matchesSearch =
         gift.name.toLowerCase().includes(searchText) ||
         gift.category.toLowerCase().includes(searchText) ||
@@ -56,7 +56,8 @@ export default function HomeScreen() {
       const matchesOccasion =
         selectedOccasion === 'all' ||
         gift.occasions.some(
-          (item) => item.toLowerCase() === selectedOccasion.toLowerCase()
+          (item) =>
+            item.toLowerCase() === selectedOccasion.toLowerCase()
         );
 
       return matchesSearch && matchesOccasion;
@@ -96,7 +97,10 @@ export default function HomeScreen() {
             onPress={() => router.push('/cart')}
             style={[
               styles.headerButton,
-              { backgroundColor: colors.surface, borderColor: colors.border },
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
             ]}
           >
             <Ionicons name="bag-outline" size={22} color={colors.primary} />
@@ -111,7 +115,9 @@ export default function HomeScreen() {
           <View style={styles.heroContent}>
             <View style={styles.heroBadge}>
               <Ionicons name="sparkles" size={13} color="#FFFFFF" />
-              <Text style={styles.heroBadgeText}>YOUR GIFTING PARTNER</Text>
+              <Text style={styles.heroBadgeText}>
+                YOUR GIFTING PARTNER
+              </Text>
             </View>
 
             <Text style={styles.heroTitle}>
@@ -125,10 +131,7 @@ export default function HomeScreen() {
 
             <Pressable
               onPress={() => router.push('/find')}
-              style={({ pressed }) => [
-                styles.heroButton,
-                { opacity: pressed ? 0.8 : 1 },
-              ]}
+              style={styles.heroButton}
             >
               <Text style={styles.heroButtonText}>Find a Gift</Text>
               <Ionicons name="arrow-forward" size={17} color="#8055D8" />
@@ -145,10 +148,17 @@ export default function HomeScreen() {
         <View
           style={[
             styles.searchBox,
-            { backgroundColor: colors.surface, borderColor: colors.border },
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
           ]}
         >
-          <Ionicons name="search-outline" size={21} color={colors.secondary} />
+          <Ionicons
+            name="search-outline"
+            size={21}
+            color={colors.secondary}
+          />
 
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
@@ -170,24 +180,17 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Occasion Categories */}
+        {/* Shop by Occasion */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Shop by Occasion
-              </Text>
-              <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
-                Gifts for every special moment
-              </Text>
-            </View>
-          </View>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Shop by Occasion
+          </Text>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryList}
-          >
+          <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
+            Gifts for every special moment
+          </Text>
+
+          <View style={styles.categoryGrid}>
             {occasions.map((occasion) => {
               const selected = selectedOccasion === occasion.id;
 
@@ -207,7 +210,9 @@ export default function HomeScreen() {
                     },
                   ]}
                 >
-                  <Text style={styles.categoryEmoji}>{occasion.emoji}</Text>
+                  <Text style={styles.categoryEmoji}>
+                    {occasion.emoji}
+                  </Text>
 
                   <Text
                     style={[
@@ -220,7 +225,7 @@ export default function HomeScreen() {
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -240,9 +245,11 @@ export default function HomeScreen() {
               <View style={styles.actionIcon}>
                 <Ionicons name="gift-outline" size={23} color="#8055D8" />
               </View>
+
               <Text style={[styles.actionTitle, { color: colors.text }]}>
                 Gift Ideas
               </Text>
+
               <Text style={[styles.actionSubtitle, { color: colors.secondary }]}>
                 Explore gifts
               </Text>
@@ -252,15 +259,30 @@ export default function HomeScreen() {
               onPress={() => router.push('/planner')}
               style={[
                 styles.actionCard,
-                { backgroundColor: isDark ? '#30243B' : '#FCEBF2' },
+                {
+                  backgroundColor: isDark ? '#30243B' : '#FCEBF2',
+                },
               ]}
             >
-              <View style={[styles.actionIcon, { backgroundColor: isDark ? '#493047' : '#F9DCE8' }]}>
-                <Ionicons name="calendar-outline" size={23} color="#D65B91" />
+              <View
+                style={[
+                  styles.actionIcon,
+                  {
+                    backgroundColor: isDark ? '#493047' : '#F9DCE8',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={23}
+                  color="#D65B91"
+                />
               </View>
+
               <Text style={[styles.actionTitle, { color: colors.text }]}>
                 Gift Planner
               </Text>
+
               <Text style={[styles.actionSubtitle, { color: colors.secondary }]}>
                 Plan special days
               </Text>
@@ -275,6 +297,7 @@ export default function HomeScreen() {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 Popular Gift Ideas
               </Text>
+
               <Text style={[styles.sectionSubtitle, { color: colors.secondary }]}>
                 A little inspiration goes a long way
               </Text>
@@ -297,10 +320,17 @@ export default function HomeScreen() {
               ]}
             >
               <Text style={styles.emptyEmoji}>🎁</Text>
+
               <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 No gifts found
               </Text>
-              <Text style={[styles.emptyDescription, { color: colors.secondary }]}>
+
+              <Text
+                style={[
+                  styles.emptyDescription,
+                  { color: colors.secondary },
+                ]}
+              >
                 Try another search or occasion.
               </Text>
 
@@ -344,7 +374,10 @@ export default function HomeScreen() {
 
                   <View style={styles.giftInfo}>
                     <Text
-                      style={[styles.giftCategory, { color: colors.secondary }]}
+                      style={[
+                        styles.giftCategory,
+                        { color: colors.secondary },
+                      ]}
                     >
                       {gift.category}
                     </Text>
@@ -374,10 +407,12 @@ export default function HomeScreen() {
           ]}
         >
           <Text style={styles.bottomEmoji}>💜</Text>
+
           <View style={{ flex: 1 }}>
             <Text style={[styles.bottomTitle, { color: colors.text }]}>
               Make Someone Smile!
             </Text>
+
             <Text style={[styles.bottomText, { color: colors.secondary }]}>
               Every gift tells a story. Make yours memorable.
             </Text>
@@ -560,25 +595,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  categoryList: {
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
-    paddingBottom: 3,
+    marginTop: 16,
   },
   categoryItem: {
-    minWidth: 85,
+    width: '31%',
+    minHeight: 91,
+    flexGrow: 1,
     borderWidth: 1,
     borderRadius: 16,
-    paddingHorizontal: 13,
+    paddingHorizontal: 5,
     paddingVertical: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryEmoji: {
-    fontSize: 23,
+    fontSize: 25,
     marginBottom: 7,
   },
   categoryName: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
+    textAlign: 'center',
   },
   actionRow: {
     flexDirection: 'row',
