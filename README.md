@@ -1,56 +1,101 @@
-# Welcome to your Expo app 👋
+# 🎁 GiftGenie – Offline Gift Shop Management System
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+GiftGenie is an offline-first mobile application developed to help gift shop owners manage their daily business operations efficiently. The application is built using **React Native, Expo and TypeScript**, with SQLite for local data storage.
 
-## Get started
+The main objective of GiftGenie is to simplify gift shop management by providing inventory control, customer management, order tracking, sales monitoring and business analytics in one mobile application.
 
-1. Install dependencies
+## ✨ Main Features
 
-   ```bash
-   npm install
-   ```
+- **Inventory Management** – Add, edit, delete and manage products, prices and stock quantities.
+- **Customer History** – Maintain customer details and view previous purchases and order history.
+- **Order Management** – Create and manage customer orders with priority levels, statuses and due dates.
+- **Sales Management** – Record sales and monitor sales history.
+- **Gift Bundle Creator** – Create gift bundles using multiple products and calculate costs and selling prices.
+- **Business Analytics** – Monitor sales, expenses, profits and business performance.
+- **Low Stock Alerts** – Get notified when product stock reaches the configured threshold.
+- **Order Reminders** – Receive reminders about upcoming order due dates.
+- **Smart Business Suggestions** – Get suggestions for restocking and upcoming seasonal occasions.
+- **Offline Backup & Restore** – Export and restore business data without requiring an internet connection.
+- **Theme Settings** – Switch between Light Mode, Dark Mode and System Default.
 
-2. Start the app
+## 🆕 Recent Updates
 
-   ```bash
-   npx expo start
-   ```
+### Product Photo Management
+- Added optional product photo selection in the Add/Edit Product forms.
+- Users can select, change or remove product photos.
+- Product photos are saved locally with product data in SQLite.
+- Product photos are included in backup data.
 
-In the output, you'll find options to open the app in a
+### Automatic Date Added
+- Product creation date is automatically recorded when a product is saved.
+- The date is displayed in the product form and product details screen.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Today Date Selection
+A **Today** button has been added to:
+- Order due-date selection.
+- Analytics expense-date selection.
+- Custom analytics date filters.
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠️ Technologies Used
 
-## Get a fresh project
+- React Native
+- Expo
+- TypeScript
+- Expo Router
+- SQLite
+- AsyncStorage
 
-When you're ready, run:
+## 🚀 Getting Started
+
+### 1. Clone the repository
 
 ```bash
-npm run reset-project
+git clone https://github.com/kaveewijesooriya/GiftGenie.git
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+### 2. Navigate to the project directory
 
-### Other setup steps
+```bash
+cd GiftGenie
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 3. Install dependencies
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 4. Start the application
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start
+```
 
-## Join the community
+Follow the terminal instructions to open the application using an available development environment or device.
 
-Join our community of developers creating universal apps.
+## 🧪 Testing and Verification
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The following checks have successfully passed after the recent updates:
+
+- TypeScript check (`npx tsc --noEmit`)
+- Lint check
+- Expo Doctor
+- Database migration check
+- Android bundle build
+
+**Note:** Manual testing on a physical Android device or emulator has not yet been performed.
+
+## 📱 Project Structure
+
+The application uses Expo Router for file-based navigation. Application routes and screens are organized inside the `src/app` directory.
+
+## 🎯 Expected Outcome
+
+GiftGenie aims to provide a simple, reliable and user-friendly offline solution for gift shop owners. It helps reduce manual work, improve inventory management, organize customer orders, track sales and support better business decisions.
+
+## 👨‍💻 Developer
+
+**Project:** GiftGenie – Offline Gift Shop Management System
+
+**GitHub Repository:** https://github.com/kaveewijesooriya/GiftGenie
+
