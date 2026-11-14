@@ -14,7 +14,7 @@ import { DATABASE_VERSION } from '@/database/migrations';
 
 const TABLES = [
   { name: 'categories', columns: ['id', 'name', 'color', 'created_at'] },
-  { name: 'products', columns: ['id', 'sku', 'name', 'category_id', 'description', 'cost_price', 'selling_price', 'stock_quantity', 'reserved_quantity', 'low_stock_threshold', 'recipient_tags', 'occasion_tags', 'active', 'emoji', 'created_at', 'updated_at'] },
+  { name: 'products', columns: ['id', 'sku', 'name', 'category_id', 'description', 'cost_price', 'selling_price', 'stock_quantity', 'reserved_quantity', 'low_stock_threshold', 'recipient_tags', 'occasion_tags', 'photo_uri', 'active', 'emoji', 'created_at', 'updated_at'] },
   { name: 'customers', columns: ['id', 'name', 'phone', 'normalized_phone', 'email', 'address', 'notes', 'created_at'] },
   { name: 'orders', columns: ['id', 'order_number', 'customer_id', 'status', 'priority', 'due_at', 'notes', 'subtotal', 'discount', 'total', 'reserved_at', 'completed_at', 'created_at', 'updated_at'] },
   { name: 'gift_bundles', columns: ['id', 'name', 'description', 'selling_price', 'discount', 'occasion_tags', 'recipient_tags', 'active', 'created_at', 'updated_at'] },

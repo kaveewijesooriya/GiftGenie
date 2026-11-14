@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 const initialSchema = `
 CREATE TABLE categories (
@@ -163,6 +163,14 @@ export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
       await db.execAsync('PRAGMA user_version = 1;');
     });
     version = 1;
+  }
+
+  if (version < 2) {
+    await db.withTransactionAsync(async () => {
+      await db.execAsync('ALTER TABLE products ADD COLUMN photo_uri TEXT;');
+      await db.execAsync('PRAGMA user_version = 2;');
+    });
+    version = 2;
   }
 
   if (version !== DATABASE_VERSION) {

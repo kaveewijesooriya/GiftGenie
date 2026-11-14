@@ -11,6 +11,7 @@ export type ProductInput = {
   lowStockThreshold: number;
   recipientTags: string[];
   occasionTags: string[];
+  photoUri?: string | null;
 };
 
 export type ProductRecord = ProductInput & {
@@ -44,6 +45,7 @@ type ProductRow = {
   low_stock_threshold: number;
   recipient_tags: string;
   occasion_tags: string;
+  photo_uri: string | null;
   active: number;
   emoji: string;
   created_at: string;
@@ -67,6 +69,7 @@ function mapProduct(row: ProductRow): ProductRecord {
     lowStockThreshold: row.low_stock_threshold,
     recipientTags: JSON.parse(row.recipient_tags) as string[],
     occasionTags: JSON.parse(row.occasion_tags) as string[],
+    photoUri: row.photo_uri,
     active: row.active === 1,
     emoji: row.emoji,
     createdAt: row.created_at,
@@ -112,10 +115,10 @@ export async function saveProduct(input: ProductInput, existingId?: string): Pro
       if (input.stockQuantity < previous.reserved_quantity) throw new Error('Stock cannot be lower than reserved stock.');
       await db.runAsync(
         `UPDATE products SET sku = ?, name = ?, category_id = ?, description = ?, cost_price = ?, selling_price = ?,
-         stock_quantity = ?, low_stock_threshold = ?, recipient_tags = ?, occasion_tags = ?, updated_at = ? WHERE id = ?`,
+         stock_quantity = ?, low_stock_threshold = ?, recipient_tags = ?, occasion_tags = ?, photo_uri = ?, updated_at = ? WHERE id = ?`,
         input.sku?.trim() || null, input.name.trim(), categoryId, input.description?.trim() ?? '', input.costPrice,
         input.sellingPrice, input.stockQuantity, input.lowStockThreshold,
-        JSON.stringify(input.recipientTags), JSON.stringify(input.occasionTags), timestamp, id
+        JSON.stringify(input.recipientTags), JSON.stringify(input.occasionTags), input.photoUri ?? null, timestamp, id
       );
       const movement = input.stockQuantity - previous.stock_quantity;
       if (movement !== 0) await db.runAsync(
@@ -125,11 +128,11 @@ export async function saveProduct(input: ProductInput, existingId?: string): Pro
     } else {
       await db.runAsync(
         `INSERT INTO products (id, sku, name, category_id, description, cost_price, selling_price, stock_quantity,
-         low_stock_threshold, recipient_tags, occasion_tags, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         low_stock_threshold, recipient_tags, occasion_tags, photo_uri, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         id, input.sku?.trim() || null, input.name.trim(), categoryId, input.description?.trim() ?? '', input.costPrice,
         input.sellingPrice, input.stockQuantity, input.lowStockThreshold,
-        JSON.stringify(input.recipientTags), JSON.stringify(input.occasionTags), timestamp, timestamp
+        JSON.stringify(input.recipientTags), JSON.stringify(input.occasionTags), input.photoUri ?? null, timestamp, timestamp
       );
       if (input.stockQuantity > 0) {
         await db.runAsync(
