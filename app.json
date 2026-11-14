@@ -28,9 +28,19 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#4C1D95",
+          "dark": {
+            "backgroundColor": "#2E1065"
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow GiftGenie to choose photos for your shop products.",
+          "microphonePermission": false
         }
       ]
     ],
