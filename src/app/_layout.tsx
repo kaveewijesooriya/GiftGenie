@@ -32,14 +32,14 @@ function RootNavigator() {
       <Stack.Screen name="gift-details/[id]" />
       <Stack.Screen name="orders/create" />
       <Stack.Screen name="orders/[id]" />
-      <Stack.Screen name="customers/index" />
+      <Stack.Screen name="customers" />
       <Stack.Screen name="customers/create" />
       <Stack.Screen name="customers/[id]" />
-      <Stack.Screen name="sales/index" />
+      <Stack.Screen name="sales" />
       <Stack.Screen name="sales/create" />
       <Stack.Screen name="bundles" />
       <Stack.Screen name="analytics" />
-      <Stack.Screen name="settings/index" />
+      <Stack.Screen name="settings" />
       <Stack.Screen name="settings/backup" />
     </Stack>
   </ThemeProvider>;

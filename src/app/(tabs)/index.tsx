@@ -41,7 +41,7 @@ export default function HomeScreen() {
         <View style={styles.stats}>
           <StatCard title="Products" value={String(summary.productCount)} icon="cube-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/inventory')} />
           <StatCard title="Open orders" value={String(summary.openOrderCount)} icon="receipt-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/orders')} />
-          <StatCard title="Sales today" value={money(summary.salesToday)} icon="trending-up-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/sales/index')} />
+          <StatCard title="Sales today" value={money(summary.salesToday)} icon="trending-up-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/sales')} />
           <StatCard title="Low stock" value={String(summary.lowStockCount)} icon="warning-outline" theme={theme} surface={card} border={border} warning onPress={() => router.push('/inventory')} />
         </View>
 
@@ -57,7 +57,7 @@ export default function HomeScreen() {
         <View style={styles.actions}>
           <QuickAction icon="add-circle-outline" label="Add product" color="#8055D8" onPress={() => router.push('/inventory?create=1')} surface={card} border={border} text={theme.text} />
           <QuickAction icon="receipt-outline" label="New order" color="#E77B42" onPress={() => router.push('/orders/create')} surface={card} border={border} text={theme.text} />
-          <QuickAction icon="people-outline" label="Customers" color="#419C80" onPress={() => router.push('/customers/index')} surface={card} border={border} text={theme.text} />
+          <QuickAction icon="people-outline" label="Customers" color="#419C80" onPress={() => router.push('/customers')} surface={card} border={border} text={theme.text} />
           <QuickAction icon="bar-chart-outline" label="Analytics" color="#D36D9C" onPress={() => router.push('/analytics')} surface={card} border={border} text={theme.text} />
         </View>
 
