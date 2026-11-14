@@ -12,12 +12,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { gifts } from '@/data/gifts';
 import { Colors } from '@/constants/theme';
 import { useShop } from '@/context/shop-context';
 
 export default function GiftIdeasScreen() {
+  const router = useRouter();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const isDark = scheme === 'dark';
@@ -31,6 +33,14 @@ export default function GiftIdeasScreen() {
   const surface = isDark ? '#252238' : '#FFFFFF';
   const border = isDark ? '#393044' : '#EEE8F6';
   const muted = colors.textSecondary;
+
+  // Open Gift Details Screen
+  const openGiftDetails = (giftId: string) => {
+    router.push({
+      pathname: '/gift-details/[id]',
+      params: { id: giftId },
+    });
+  };
 
   const categories = useMemo(
     () => [
@@ -249,16 +259,22 @@ export default function GiftIdeasScreen() {
             >
               {/* Gift Visual */}
               <View style={styles.giftVisual}>
-                <View style={styles.giftVisualCircle}>
-                  <Text style={styles.giftEmoji}>{item.emoji}</Text>
-                </View>
+                <Pressable
+                  style={styles.giftVisualContent}
+                  onPress={() => openGiftDetails(item.id)}
+                >
+                  <View style={styles.giftVisualCircle}>
+                    <Text style={styles.giftEmoji}>{item.emoji}</Text>
+                  </View>
 
-                <View style={styles.visualLabel}>
-                  <Text style={styles.visualLabelText}>
-                    {item.category.toUpperCase()}
-                  </Text>
-                </View>
+                  <View style={styles.visualLabel}>
+                    <Text style={styles.visualLabelText}>
+                      {item.category.toUpperCase()}
+                    </Text>
+                  </View>
+                </Pressable>
 
+                {/* Wishlist Button */}
                 <Pressable
                   onPress={() => toggleWishlist(item.id)}
                   style={styles.heartButton}
@@ -273,21 +289,23 @@ export default function GiftIdeasScreen() {
 
               {/* Gift Details */}
               <View style={styles.details}>
-                <View style={styles.nameRow}>
+                <Pressable onPress={() => openGiftDetails(item.id)}>
+                  <View style={styles.nameRow}>
+                    <Text
+                      style={[styles.name, { color: colors.text }]}
+                      numberOfLines={2}
+                    >
+                      {item.name}
+                    </Text>
+                  </View>
+
                   <Text
-                    style={[styles.name, { color: colors.text }]}
+                    style={[styles.description, { color: muted }]}
                     numberOfLines={2}
                   >
-                    {item.name}
+                    {item.description}
                   </Text>
-                </View>
-
-                <Text
-                  style={[styles.description, { color: muted }]}
-                  numberOfLines={2}
-                >
-                  {item.description}
-                </Text>
+                </Pressable>
 
                 <View style={styles.priceRow}>
                   <View>
@@ -504,6 +522,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+  },
+  giftVisualContent: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   giftVisualCircle: {
     width: 100,

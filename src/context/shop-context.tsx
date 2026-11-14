@@ -26,6 +26,7 @@ type ShopContextType = {
 
 const CART_STORAGE_KEY = '@giftgenie_cart';
 const WISHLIST_STORAGE_KEY = '@giftgenie_wishlist';
+const validGiftIds = new Set(gifts.map((gift) => gift.id));
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
@@ -50,7 +51,16 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
             typeof parsedCart === 'object' &&
             !Array.isArray(parsedCart)
           ) {
-            setCart(parsedCart as Record<string, number>);
+            const validCart = Object.fromEntries(
+              Object.entries(parsedCart).filter(
+                ([id, quantity]) =>
+                  validGiftIds.has(id) &&
+                  typeof quantity === 'number' &&
+                  Number.isSafeInteger(quantity) &&
+                  quantity > 0
+              )
+            ) as Record<string, number>;
+            setCart(validCart);
           }
         }
 
@@ -59,16 +69,20 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
 
           if (Array.isArray(parsedWishlist)) {
             setWishlist(
-              parsedWishlist.filter(
-                (id): id is string => typeof id === 'string'
+              Array.from(
+                new Set(
+                  parsedWishlist.filter(
+                    (id): id is string =>
+                      typeof id === 'string' && validGiftIds.has(id)
+                  )
+                )
               )
             );
           }
         }
+        setIsLoaded(true);
       } catch (error) {
         console.error('Failed to load saved shopping data:', error);
-      } finally {
-        setIsLoaded(true);
       }
     };
 
@@ -96,6 +110,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   }, [cart, wishlist, isLoaded]);
 
   const addToCart = (giftId: string) => {
+    if (!validGiftIds.has(giftId)) return;
+
     setCart((current) => ({
       ...current,
       [giftId]: (current[giftId] ?? 0) + 1,
@@ -103,6 +119,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeFromCart = (giftId: string) => {
+    if (!validGiftIds.has(giftId)) return;
+
     setCart((current) => {
       const updated = { ...current };
       delete updated[giftId];
@@ -111,18 +129,22 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = (giftId: string, quantity: number) => {
-    if (quantity <= 0) {
+    if (!validGiftIds.has(giftId)) return;
+
+    if (!Number.isFinite(quantity) || quantity <= 0) {
       removeFromCart(giftId);
       return;
     }
 
     setCart((current) => ({
       ...current,
-      [giftId]: quantity,
+      [giftId]: Math.max(1, Math.floor(quantity)),
     }));
   };
 
   const toggleWishlist = (giftId: string) => {
+    if (!validGiftIds.has(giftId)) return;
+
     setWishlist((current) =>
       current.includes(giftId)
         ? current.filter((id) => id !== giftId)

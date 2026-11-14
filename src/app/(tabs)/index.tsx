@@ -349,7 +349,12 @@ export default function HomeScreen() {
               {popularGifts.map((gift) => (
                 <Pressable
                   key={gift.id}
-                  onPress={() => router.push('/explore')}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/gift-details/[id]',
+                      params: { id: gift.id },
+                    })
+                  }
                   style={({ pressed }) => [
                     styles.giftCard,
                     {

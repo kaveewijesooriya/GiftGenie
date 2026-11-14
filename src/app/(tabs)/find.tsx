@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   useColorScheme,
 } from 'react-native';
@@ -24,7 +25,14 @@ export default function FindGiftsScreen() {
 
   const [selectedRecipient, setSelectedRecipient] = useState('All');
   const [selectedOccasion, setSelectedOccasion] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [search, setSearch] = useState('');
   const [maxBudget, setMaxBudget] = useState(10000);
+
+  const categories = useMemo(
+    () => ['All', ...Array.from(new Set(gifts.map((gift) => gift.category)))],
+    []
+  );
 
   const recipients = useMemo(
     () => ['All', ...Array.from(new Set(gifts.flatMap((gift) => gift.recipients)))],
@@ -47,10 +55,22 @@ export default function FindGiftsScreen() {
         gift.occasions.includes(selectedOccasion);
 
       const matchesBudget = gift.price <= maxBudget;
+      const searchText = search.trim().toLowerCase();
+      const matchesSearch =
+        gift.name.toLowerCase().includes(searchText) ||
+        gift.category.toLowerCase().includes(searchText);
+      const matchesCategory =
+        selectedCategory === 'All' || gift.category === selectedCategory;
 
-      return matchesRecipient && matchesOccasion && matchesBudget;
+      return (
+        matchesRecipient &&
+        matchesOccasion &&
+        matchesBudget &&
+        matchesSearch &&
+        matchesCategory
+      );
     });
-  }, [selectedRecipient, selectedOccasion, maxBudget]);
+  }, [selectedRecipient, selectedOccasion, selectedCategory, maxBudget, search]);
 
   const renderOptions = (
     options: string[],
@@ -100,6 +120,30 @@ export default function FindGiftsScreen() {
       <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Tell us what you are looking for!
       </Text>
+
+      <TextInput
+        accessibilityLabel="Search gifts by name or category"
+        style={[
+          styles.searchInput,
+          {
+            color: colors.text,
+            backgroundColor: colors.backgroundElement,
+            borderColor: colors.backgroundSelected,
+          },
+        ]}
+        placeholder="Search gifts or categories"
+        placeholderTextColor={colors.textSecondary}
+        value={search}
+        onChangeText={setSearch}
+        returnKeyType="search"
+      />
+
+      <View style={styles.filterSection}>
+        <Text style={[styles.filterTitle, { color: colors.text }]}>
+          Gift Category
+        </Text>
+        {renderOptions(categories, selectedCategory, setSelectedCategory)}
+      </View>
 
       <View style={styles.filterSection}>
         <Text style={[styles.filterTitle, { color: colors.text }]}>
@@ -196,6 +240,8 @@ export default function FindGiftsScreen() {
             onPress={() => {
               setSelectedRecipient('All');
               setSelectedOccasion('All');
+              setSelectedCategory('All');
+              setSearch('');
               setMaxBudget(10000);
             }}
             style={styles.resetButton}
@@ -284,6 +330,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 6,
     marginBottom: 22,
+  },
+  searchInput: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: 13,
+    paddingHorizontal: 14,
+    fontSize: 14,
+    marginBottom: 20,
   },
   filterSection: {
     marginBottom: 20,
