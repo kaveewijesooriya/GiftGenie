@@ -1,43 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';
+import { useAppearance } from '@/context/appearance-context';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const { isDark } = useAppearance();
+  const palette = Colors[isDark ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
-  const inactiveColor = '#8E8E93';
-
+  const inactive = isDark ? '#A49BAF' : '#8E8797';
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#8055D8',
-        tabBarInactiveTintColor: inactiveColor,
-        tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.backgroundElement,
-          height: 58 + insets.bottom,
-          paddingTop: 5,
-          paddingBottom: Math.max(insets.bottom, 6),
-          elevation: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-          marginTop: 2,
-        },
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: 'Home', tabBarLabel: 'Home', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
-      <Tabs.Screen name="explore" options={{ title: 'Gift Ideas', tabBarLabel: 'Gift Ideas', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'gift' : 'gift-outline'} size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
-      <Tabs.Screen name="find" options={{ title: 'Find Gifts', tabBarLabel: 'Find', tabBarIcon: ({ size, focused }) => <Ionicons name="search-outline" size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
-      <Tabs.Screen name="cart" options={{ title: 'Cart', tabBarLabel: 'Cart', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'cart' : 'cart-outline'} size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
-      <Tabs.Screen name="wishlist" options={{ title: 'Wishlist', tabBarLabel: 'Wishlist', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'heart' : 'heart-outline'} size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
-      <Tabs.Screen name="planner" options={{ title: 'Planner', tabBarLabel: 'Planner', tabBarIcon: ({ size, focused }) => <Ionicons name="calendar-outline" size={size} color={focused ? '#8055D8' : inactiveColor} /> }} />
+    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: '#8055D8', tabBarInactiveTintColor: inactive,
+      tabBarStyle: { backgroundColor: palette.background, borderTopColor: isDark ? '#34244A' : '#E8E1F0', height: 58 + insets.bottom, paddingTop: 5, paddingBottom: Math.max(insets.bottom, 6), elevation: 8 },
+      tabBarLabelStyle: { fontSize: 10, fontWeight: '700', marginTop: 2 } }}>
+      <Tabs.Screen name="index" options={{ title: 'Home', tabBarLabel: 'Home', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'home' : 'home-outline'} size={size} color={focused ? '#8055D8' : inactive} /> }} />
+      <Tabs.Screen name="inventory" options={{ title: 'Inventory', tabBarLabel: 'Inventory', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'cube' : 'cube-outline'} size={size} color={focused ? '#8055D8' : inactive} /> }} />
+      <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarLabel: 'Orders', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'receipt' : 'receipt-outline'} size={size} color={focused ? '#8055D8' : inactive} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarLabel: 'Profile', tabBarIcon: ({ size, focused }) => <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={size} color={focused ? '#8055D8' : inactive} /> }} />
     </Tabs>
   );
 }
