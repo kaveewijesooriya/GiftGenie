@@ -42,7 +42,7 @@ export default function HomeScreen() {
           <StatCard title="Products" value={String(summary.productCount)} icon="cube-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/inventory')} />
           <StatCard title="Open orders" value={String(summary.openOrderCount)} icon="receipt-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/orders')} />
           <StatCard title="Sales today" value={money(summary.salesToday)} icon="trending-up-outline" theme={theme} surface={card} border={border} onPress={() => router.push('/sales')} />
-          <StatCard title="Low stock" value={String(summary.lowStockCount)} icon="warning-outline" theme={theme} surface={card} border={border} warning onPress={() => router.push('/inventory')} />
+          <StatCard title="Low stock" value={String(summary.lowStockCount)} icon="warning-outline" theme={theme} surface={card} border={border} warning onPress={() => router.push('/inventory?lowStock=1')} />
         </View>
 
         <View style={[styles.hero, { backgroundColor: '#5B2AB8' }]}>
@@ -62,7 +62,7 @@ export default function HomeScreen() {
         </View>
 
         {error ? <Text style={{ color: '#D94343', marginTop: 14 }}>{error}</Text> : null}
-        <View style={styles.sectionRow}><Text style={[styles.sectionTitle, { color: theme.text }]}>Low stock alerts</Text><Pressable onPress={() => router.push('/inventory')}><Text style={styles.link}>View inventory</Text></Pressable></View>
+        <View style={styles.sectionRow}><Text style={[styles.sectionTitle, { color: theme.text }]}>Low stock alerts</Text><Pressable onPress={() => router.push('/inventory?lowStock=1')}><Text style={styles.link}>View low stock</Text></Pressable></View>
         {summary.lowStockProducts.length ? summary.lowStockProducts.map((product) => (
           <Pressable key={product.id} onPress={() => router.push({ pathname: '/gift-details/[id]', params: { id: product.id } })} style={[styles.listRow, { backgroundColor: card, borderColor: border }]}>
             <View style={[styles.miniIcon, { backgroundColor: '#FFF0E8' }]}><Ionicons name="cube-outline" size={18} color="#DA6C32" /></View>

@@ -42,7 +42,7 @@ export default function BackupRestoreScreen() {
   const router = useRouter(); const { isDark } = useAppearance(); const theme = Colors[isDark ? 'dark' : 'light']; const card = isDark ? '#252238' : '#FFFFFF'; const border = isDark ? '#393044' : '#EEE8F6';
   const [loading, setLoading] = useState(false); const [backupBeforeRestore, setBackupBeforeRestore] = useState(true); const [message, setMessage] = useState('');
 
-  async function makeBackup(share: boolean): Promise<string> {
+  async function makeBackup(share: boolean): Promise<string | null> {
     const db = await getDatabase(); const data = {} as BackupData;
     for (const table of TABLES) {
       const rows = await db.getAllAsync<Record<string, unknown>>(`SELECT * FROM ${table.name}`);
@@ -51,9 +51,27 @@ export default function BackupRestoreScreen() {
     const [appearance, currency, notifications] = await Promise.all([AsyncStorage.getItem('@giftgenie_appearance'), AsyncStorage.getItem('@giftgenie_currency'), AsyncStorage.getItem('@giftgenie_notifications')]);
     const backup: BackupFile = { app: 'GiftGenie', schemaVersion: DATABASE_VERSION, exportedAt: new Date().toISOString(), data, preferences: { appearance: appearance ?? 'system', currency: currency ?? 'LKR', notifications: notifications ?? 'true' } };
     const stamp = new Date().toISOString().replace(/[:.]/g, '-'); const fileName = `GiftGenie-backup-${stamp}.json`;
-    if (Platform.OS === 'web' || !FileSystem.documentDirectory) throw new Error('JSON file export requires the GiftGenie mobile app.');
-    const uri = `${FileSystem.cacheDirectory ?? FileSystem.documentDirectory}${fileName}`;
-    await FileSystem.writeAsStringAsync(uri, JSON.stringify(backup, null, 2), { encoding: FileSystem.EncodingType.UTF8 });
+    const contents = JSON.stringify(backup, null, 2);
+    if (Platform.OS === 'web') {
+      const blob = new Blob([contents], { type: 'application/json' });
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      return null;
+    }
+    if (!FileSystem.documentDirectory) throw new Error('The app could not access its local documents folder.');
+    const backupDirectory = `${FileSystem.documentDirectory}GiftGenieBackups/`;
+    const directoryInfo = await FileSystem.getInfoAsync(backupDirectory);
+    if (!directoryInfo.exists) {
+      await FileSystem.makeDirectoryAsync(backupDirectory, { intermediates: true });
+    }
+    const uri = `${backupDirectory}${fileName}`;
+    await FileSystem.writeAsStringAsync(uri, contents, { encoding: FileSystem.EncodingType.UTF8 });
     if (share) {
       if (!(await Sharing.isAvailableAsync())) throw new Error('File sharing is not available on this device.');
       await Sharing.shareAsync(uri, { mimeType: 'application/json', dialogTitle: 'Save GiftGenie backup', UTI: 'public.json' });
@@ -63,7 +81,10 @@ export default function BackupRestoreScreen() {
 
   async function exportBackup() {
     setLoading(true); setMessage('Preparing your local backup…');
-    try { await makeBackup(true); setMessage('Backup file is ready. Save it somewhere safe.'); }
+    try {
+      await makeBackup(true);
+      setMessage(Platform.OS === 'web' ? 'Backup downloaded. Save the JSON file somewhere safe.' : 'Backup file is ready. Save it somewhere safe.');
+    }
     catch (caught) { setMessage(caught instanceof Error ? caught.message : 'Backup could not be created.'); }
     finally { setLoading(false); }
   }
@@ -74,20 +95,48 @@ export default function BackupRestoreScreen() {
       const result = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/json', 'public.json'], copyToCacheDirectory: true, multiple: false });
       if (result.canceled || !result.assets[0]) return;
       setLoading(true);
-      const text = await FileSystem.readAsStringAsync(result.assets[0].uri, { encoding: FileSystem.EncodingType.UTF8 });
+      const asset = result.assets[0];
+      const text = Platform.OS === 'web' && asset.file
+        ? await asset.file.text()
+        : await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.UTF8 });
       const parsed: unknown = JSON.parse(text);
       if (!validBackup(parsed)) throw new Error(`This is not a supported GiftGenie backup (expected schema version ${DATABASE_VERSION}).`);
       if (backupBeforeRestore) await makeBackup(true);
-      Alert.alert('Restore this backup?', 'Restoring replaces all current business records on this device. Make sure you have saved the selected file.', [
+      const applyBackup = async () => {
+        try {
+          await restoreData(parsed);
+          const pref = parsed.preferences;
+          await Promise.all([
+            AsyncStorage.setItem('@giftgenie_appearance', pref.appearance),
+            AsyncStorage.setItem('@giftgenie_currency', pref.currency),
+            AsyncStorage.setItem('@giftgenie_notifications', pref.notifications),
+          ]);
+          setMessage('Backup restored successfully. Return to the dashboard to reload the saved data.');
+        } catch (caught) {
+          setMessage(caught instanceof Error ? `Restore failed: ${caught.message}` : 'Restore failed. Your previous data was kept.');
+        } finally {
+          setLoading(false);
+        }
+      };
+      const confirmation = 'Restoring replaces all current business records on this device. Make sure you have saved the selected file.';
+      if (Platform.OS === 'web') {
+        if (!window.confirm(`Restore this backup?\n\n${confirmation}`)) {
+          setLoading(false);
+          return;
+        }
+        await applyBackup();
+        return;
+      }
+      Alert.alert('Restore this backup?', confirmation, [
         { text: 'Cancel', style: 'cancel', onPress: () => setLoading(false) },
-        { text: 'Replace data', style: 'destructive', onPress: () => { void restoreData(parsed).then(async () => { const pref = parsed.preferences; await Promise.all([AsyncStorage.setItem('@giftgenie_appearance', pref.appearance), AsyncStorage.setItem('@giftgenie_currency', pref.currency), AsyncStorage.setItem('@giftgenie_notifications', pref.notifications)]); setMessage('Backup restored successfully. Return to the dashboard to reload the saved data.'); }).catch((caught: unknown) => setMessage(caught instanceof Error ? `Restore failed: ${caught.message}` : 'Restore failed. Your previous data was kept.')).finally(() => setLoading(false)); } },
+        { text: 'Replace data', style: 'destructive', onPress: () => { void applyBackup(); } },
       ]);
     } catch (caught) { setMessage(caught instanceof Error ? caught.message : 'The selected file could not be read.'); setLoading(false); }
   }
 
   return <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['top']}><ScrollView contentContainerStyle={styles.content}><View style={styles.header}><Pressable onPress={() => router.back()}><Text style={{ color: '#8055D8', fontWeight: '800' }}>‹ Back</Text></Pressable><Text style={[styles.title, { color: theme.text }]}>Backup & Restore</Text><View style={{ width: 35 }} /></View>
     <View style={[styles.hero, { backgroundColor: card, borderColor: border }]}><View style={styles.icon}><Text style={{ fontSize: 26 }}>🛡️</Text></View><Text style={[styles.heroTitle, { color: theme.text }]}>Your shop data stays yours</Text><Text style={styles.hint}>Backups are JSON files saved and shared locally from this device. Nothing is uploaded.</Text></View>
-    <Text style={[styles.section, { color: theme.text }]}>Create a backup</Text><View style={[styles.panel, { backgroundColor: card, borderColor: border }]}><Text style={[styles.panelTitle, { color: theme.text }]}>Export business data</Text><Text style={styles.hint}>Includes products, customers, orders, sales, bundles, stock movements, expenses and app settings. Schema version {DATABASE_VERSION}.</Text><Pressable disabled={loading} onPress={() => void exportBackup()} style={[styles.primary, loading && { opacity: .6 }]}><Text style={styles.primaryText}>{loading ? 'Please wait…' : 'Create & share backup'}</Text></Pressable></View>
+    <Text style={[styles.section, { color: theme.text }]}>Create a backup</Text><View style={[styles.panel, { backgroundColor: card, borderColor: border }]}><Text style={[styles.panelTitle, { color: theme.text }]}>Export business data</Text><Text style={styles.hint}>Includes products, customers, orders, sales, bundles, stock movements, expenses and app settings. Schema version {DATABASE_VERSION}.</Text><Pressable disabled={loading} onPress={() => void exportBackup()} style={[styles.primary, loading && { opacity: .6 }]}><Text style={styles.primaryText}>{loading ? 'Please wait…' : Platform.OS === 'web' ? 'Download backup file' : 'Create & share backup'}</Text></Pressable></View>
     <Text style={[styles.section, { color: theme.text }]}>Restore a backup</Text><View style={[styles.panel, { backgroundColor: card, borderColor: border }]}><Text style={[styles.panelTitle, { color: theme.text }]}>Replace business data</Text><Text style={styles.hint}>Choose a valid GiftGenie JSON file. The app validates the schema before showing a replacement confirmation. A restore is applied in one database transaction.</Text><View style={styles.backupRow}><View style={{ flex: 1 }}><Text style={[styles.panelTitle, { color: theme.text, fontSize: 12 }]}>Create safety backup first</Text><Text style={styles.hint}>Saves a backup copy locally before replacing data.</Text></View><Switch value={backupBeforeRestore} onValueChange={setBackupBeforeRestore} trackColor={{ true: '#8055D8' }} /></View><Pressable disabled={loading} onPress={() => void importBackup()} style={[styles.secondary, loading && { opacity: .6 }]}><Text style={styles.secondaryText}>{loading ? 'Please wait…' : 'Choose backup file'}</Text></Pressable></View>
     {message ? <Text style={styles.message}>{message}</Text> : null}
   </ScrollView></SafeAreaView>;

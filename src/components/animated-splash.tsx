@@ -14,6 +14,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// React Native's native animation module is unavailable in the browser.
+const useNativeDriver = Platform.OS !== 'web';
+
 const sparkles = [
   { left: '12%', top: '22%', size: 20, color: '#FDE68A', icon: 'sparkles' },
   { right: '12%', top: '31%', size: 17, color: '#E9D5FF', icon: 'star' },
@@ -54,13 +57,13 @@ export function AnimatedSplashOverlay() {
             Animated.timing(opacity, {
               toValue: 1,
               duration: 350,
-              useNativeDriver: true,
+              useNativeDriver,
             }),
             Animated.delay(250),
             Animated.timing(opacity, {
               toValue: 0.18,
               duration: 650,
-              useNativeDriver: true,
+              useNativeDriver,
             }),
             Animated.delay(350 + index * 90),
           ])
@@ -79,13 +82,13 @@ export function AnimatedSplashOverlay() {
               toValue: -9,
               duration: 1_150,
               easing: Easing.inOut(Easing.sin),
-              useNativeDriver: true,
+              useNativeDriver,
             }),
             Animated.timing(giftFloatY, {
               toValue: 0,
               duration: 1_150,
               easing: Easing.inOut(Easing.sin),
-              useNativeDriver: true,
+              useNativeDriver,
             }),
           ])
         ),
@@ -116,7 +119,7 @@ export function AnimatedSplashOverlay() {
       toValue: 0,
       duration: 300,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver,
     }).start(({ finished: fadeFinished }) => {
       if (fadeFinished && mounted.current) setVisible(false);
     });
@@ -142,37 +145,37 @@ export function AnimatedSplashOverlay() {
         toValue: 1,
         duration: 650,
         easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
+      useNativeDriver,
       }),
       Animated.parallel([
         Animated.spring(giftScale, {
           toValue: 1,
           friction: 5,
           tension: 66,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(giftOpacity, {
           toValue: 1,
           duration: 480,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(giftEntranceY, {
           toValue: 0,
           duration: 520,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver,
         }),
       ]),
       Animated.stagger(150, [
         Animated.timing(titleOpacity, {
           toValue: 1,
           duration: 450,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(taglineOpacity, {
           toValue: 1,
           duration: 420,
-          useNativeDriver: true,
+          useNativeDriver,
         }),
       ]),
       Animated.delay(1_100),
@@ -187,13 +190,13 @@ export function AnimatedSplashOverlay() {
           toValue: 1,
           duration: 450,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver,
         }),
         Animated.timing(buttonTranslateY, {
           toValue: 0,
           duration: 450,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver,
         }),
       ]).start();
     });

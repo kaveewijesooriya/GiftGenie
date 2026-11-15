@@ -219,17 +219,19 @@ export async function listCustomers(search = ''): Promise<CustomerRecord[]> {
   return rows.map((row) => ({ id: row.id, name: row.name, phone: row.phone, email: row.email ?? '', address: row.address ?? '', notes: row.notes, createdAt: row.created_at, orderCount: row.order_count, totalSpent: row.total_spent, lastPurchase: row.last_purchase }));
 }
 
-export async function saveCustomer(input: CustomerInput, id?: string): Promise<void> {
+export async function saveCustomer(input: CustomerInput, id?: string): Promise<string> {
   const name = input.name.trim();
   const phone = input.phone.trim();
   const normalized = normalizePhone(phone);
   if (!name || !normalized) throw new Error('Customer name and phone number are required.');
+  const customerId = id ?? newId('cus');
   await runInTransaction(async (db) => {
-    const duplicate = await db.getFirstAsync<{ id: string }>('SELECT id FROM customers WHERE normalized_phone = ? AND id != ?', normalized, id ?? '');
+    const duplicate = await db.getFirstAsync<{ id: string }>('SELECT id FROM customers WHERE normalized_phone = ? AND id != ?', normalized, customerId);
     if (duplicate) throw new Error('A customer with this phone number already exists.');
-    if (id) await db.runAsync('UPDATE customers SET name = ?, phone = ?, normalized_phone = ?, email = ?, address = ?, notes = ? WHERE id = ?', name, phone, normalized, input.email?.trim() || null, input.address?.trim() || null, input.notes?.trim() ?? '', id);
-    else await db.runAsync('INSERT INTO customers (id, name, phone, normalized_phone, email, address, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', newId('cus'), name, phone, normalized, input.email?.trim() || null, input.address?.trim() || null, input.notes?.trim() ?? '', now());
+    if (id) await db.runAsync('UPDATE customers SET name = ?, phone = ?, normalized_phone = ?, email = ?, address = ?, notes = ? WHERE id = ?', name, phone, normalized, input.email?.trim() || null, input.address?.trim() || null, input.notes?.trim() ?? '', customerId);
+    else await db.runAsync('INSERT INTO customers (id, name, phone, normalized_phone, email, address, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', customerId, name, phone, normalized, input.email?.trim() || null, input.address?.trim() || null, input.notes?.trim() ?? '', now());
   });
+  return customerId;
 }
 
 export async function deleteCustomer(id: string): Promise<void> {

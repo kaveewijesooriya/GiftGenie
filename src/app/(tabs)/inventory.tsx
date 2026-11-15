@@ -16,13 +16,15 @@ const OCCASION_OPTIONS = ['Birthday', 'Anniversary', 'Wedding', 'Valentine’s D
 const RECIPIENT_OPTIONS = ['Babies', 'Boys', 'Children', 'Couples', 'Family', 'Friends', 'Girls', 'Men', 'Newborns', 'Parents', 'Pets', 'Teachers', 'Women', 'Both', 'Other'];
 
 export default function InventoryScreen() {
-  const params = useLocalSearchParams<{ create?: string; editId?: string }>();
+  const params = useLocalSearchParams<{ create?: string; editId?: string; lowStock?: string }>();
   const { isDark: dark, currency } = useAppearance();
   const colors = Colors[dark ? 'dark' : 'light'];
   const surface = dark ? '#252238' : '#FFFFFF';
   const border = dark ? '#393044' : '#EEE8F6';
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [search, setSearch] = useState('');
+  const [lowStockOverride, setLowStockOverride] = useState<{ param?: string; value: boolean } | null>(null);
+  const lowStockOnly = lowStockOverride && lowStockOverride.param === params.lowStock ? lowStockOverride.value : params.lowStock === '1';
   const [modal, setModal] = useState(false);
   const [editing, setEditing] = useState<ProductRecord | null>(null);
   const [form, setForm] = useState<ProductInput>(blank);
@@ -67,12 +69,13 @@ export default function InventoryScreen() {
 
   const visible = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return products.filter((item) => (!query || `${item.name} ${item.sku} ${item.category}`.toLowerCase().includes(query)) &&
+    return products.filter((item) => (!lowStockOnly || item.stockQuantity - item.reservedQuantity <= item.lowStockThreshold) &&
+      (!query || `${item.name} ${item.sku} ${item.category}`.toLowerCase().includes(query)) &&
       (categoryFilter === 'All' || item.category === categoryFilter) &&
       (occasionFilter === 'All' || item.occasionTags.includes(occasionFilter)) &&
       (recipientFilter === 'All' || item.recipientTags.includes(recipientFilter)) &&
       (minPrice === '' || item.sellingPrice >= Number(minPrice)) && (maxPrice === '' || item.sellingPrice <= Number(maxPrice)));
-  }, [products, search, minPrice, maxPrice, categoryFilter, occasionFilter, recipientFilter]);
+  }, [products, search, minPrice, maxPrice, categoryFilter, occasionFilter, recipientFilter, lowStockOnly]);
   const categories = useMemo(() => ['All', ...Array.from(new Set([...CATEGORY_OPTIONS.filter((item) => item !== 'Other'), ...products.map((item) => item.category).filter(Boolean), 'Other'])).sort()], [products]);
   const occasions = useMemo(() => ['All', ...Array.from(new Set([...OCCASION_OPTIONS, ...products.flatMap((item) => item.occasionTags), ...form.occasionTags])).sort()], [products, form.occasionTags]);
   const recipients = useMemo(() => ['All', ...Array.from(new Set([...RECIPIENT_OPTIONS, ...products.flatMap((item) => item.recipientTags), ...form.recipientTags])).sort()], [products, form.recipientTags]);
@@ -134,7 +137,7 @@ export default function InventoryScreen() {
         <FilterRow label="Category" values={categories} value={categoryFilter} onChange={setCategoryFilter} />
         <FilterRow label="Occasion" values={occasions} value={occasionFilter} onChange={setOccasionFilter} />
         <FilterRow label="Recipient" values={recipients} value={recipientFilter} onChange={setRecipientFilter} />
-        <View style={styles.summary}><Text style={[styles.summaryText, { color: colors.textSecondary }]}>{visible.length} active {visible.length === 1 ? 'product' : 'products'}</Text><Text style={[styles.summaryText, { color: colors.textSecondary }]}>{products.filter((item) => item.stockQuantity - item.reservedQuantity <= item.lowStockThreshold).length} low stock</Text></View>
+        <View style={styles.summary}><Text style={[styles.summaryText, { color: colors.textSecondary }]}>{visible.length} {lowStockOnly ? 'low-stock' : 'active'} {visible.length === 1 ? 'product' : 'products'}</Text><Pressable onPress={() => setLowStockOverride({ param: params.lowStock, value: !lowStockOnly })}><Text style={{ color: '#8055D8', fontSize: 11, fontWeight: '800' }}>{lowStockOnly ? 'Show all products' : `${products.filter((item) => item.stockQuantity - item.reservedQuantity <= item.lowStockThreshold).length} low stock · Show only`}</Text></Pressable></View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         {!products.length ? <View style={[styles.empty, { backgroundColor: surface, borderColor: border }]}><View style={styles.emptyIcon}><Ionicons name="cube-outline" size={29} color="#8055D8" /></View><Text style={[styles.emptyTitle, { color: colors.text }]}>Start your inventory</Text><Text style={[styles.emptyCopy, { color: colors.textSecondary }]}>Add the products you sell. Your stock, cost and profit records will stay on this device.</Text><Pressable onPress={openNew} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Add your first product</Text></Pressable></View> : visible.length ? visible.map((product) => {
           const available = product.stockQuantity - product.reservedQuantity;
